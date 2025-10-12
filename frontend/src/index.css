@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "@fontsource/lexend";
+
+/* --- Global Font Setup --- */
+body {
+    @apply font-sans bg-black text-white;
+    font-family: 'Lexend', sans-serif;
+}

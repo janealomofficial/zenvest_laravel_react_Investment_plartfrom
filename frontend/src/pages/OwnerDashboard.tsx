@@ -66,7 +66,7 @@ const OwnerDashboard = () => {
               {applications.map((app) => (
                 <tr key={app.id} className="border-b">
                   <td className="px-4 py-2">{app.business_name}</td>
-                  <td className="px-4 py-2">${app.funding_amount.toFixed(2)}</td>
+                  <td>${Number(app.funding_amount || 0).toFixed(2)}</td>
                   <td className="px-4 py-2 capitalize">{app.status}</td>
                 </tr>
               ))}

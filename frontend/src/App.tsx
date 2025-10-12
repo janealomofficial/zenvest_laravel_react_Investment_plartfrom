@@ -1,4 +1,8 @@
 import React from 'react';
+import "@fontsource/lexend"; // Default Lexend font
+import "@fontsource/lexend/400.css";
+import "@fontsource/lexend/500.css";
+import "@fontsource/lexend/700.css";
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import HomePage from './pages/HomePage';
