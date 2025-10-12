@@ -1,0 +1,9 @@
+/*
+ * Styles for the dashboard sidebar. The majority of styling is handled
+ * through Tailwind classes applied in the JSX. This file provides a
+ * placeholder for custom CSS and future enhancements. The transition
+ * ensures the sidebar smoothly appears/disappears if animated later.
+ */
+aside {
+  transition: all 0.3s ease;
+}
