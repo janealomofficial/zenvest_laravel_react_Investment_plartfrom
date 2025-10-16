@@ -7,11 +7,14 @@ const Header = () => {
             <div className="max-w-7xl mx-auto flex justify-between items-center py-4 px-6">
                 {/* Logo */}
                 <div className="text-2xl font-bold tracking-wide">
-                    <span className="text-white">ZenVest</span>
+                    <span id="home" className="text-white">ZenVest</span>
                 </div>
 
                 {/* Navigation Links */}
                 <nav className="hidden md:flex space-x-8 text-sm font-medium">
+                    <a href="/" className="hover:text-purple-400 transition">
+                        Home
+                    </a>
                     <a href="#about" className="hover:text-purple-400 transition">
                         About
                     </a>
@@ -24,8 +27,8 @@ const Header = () => {
                     <a href="#benefits" className="hover:text-purple-400 transition">
                         Benefits
                     </a>
-                    <a href="#blog" className="hover:text-purple-400 transition">
-                        Blog
+                    <a href="#testimonial" className="hover:text-purple-400 transition">
+                        Testimonial
                     </a>
                     <a href="#faq" className="hover:text-purple-400 transition">
                         FAQ

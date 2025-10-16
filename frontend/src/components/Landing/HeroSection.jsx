@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const HeroSection = () => {
     return (
-        <section className="relative h-screen flex items-center justify-center bg-gradient-to-b from-purple-900 via-black to-black text-white text-center px-6">
+        <section id="home" className="relative h-screen flex items-center justify-center bg-gradient-to-b from-purple-900 via-black to-black text-white text-center px-6">
             <div className="max-w-4xl">
                 <div>
                     <h1 className="text-9xl md:text-9xl font-extrabold leading-tight mb-6">ZenVest</h1>

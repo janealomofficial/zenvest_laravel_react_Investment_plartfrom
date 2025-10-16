@@ -3,7 +3,7 @@ import featureImg from "../assets/feature-shield.png"; // your new purple shield
 
 const FeatureSectionTwo = () => {
     return (
-        <section className="bg-black text-white py-24 px-6 md:px-16">
+        <section id="features" className="bg-black text-white py-24 px-6 md:px-16">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
 
                 {/* --- Left Image --- */}

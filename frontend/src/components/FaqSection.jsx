@@ -50,7 +50,7 @@ const FaqSection = () => {
     };
 
     return (
-        <section className="bg-black text-white py-20">
+        <section id="faq" className="bg-black text-white py-20">
             <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row gap-12 items-start">
                 {/* Left Side */}
                 <div className="md:w-1/2">
@@ -82,8 +82,8 @@ const FaqSection = () => {
                                 <span className="font-medium">{faq.question}</span>
                                 <svg
                                     className={`w-5 h-5 transition-transform ${openIndex === faq.id
-                                            ? "rotate-180 text-purple-400"
-                                            : "rotate-0"
+                                        ? "rotate-180 text-purple-400"
+                                        : "rotate-0"
                                         }`}
                                     fill="none"
                                     stroke="currentColor"

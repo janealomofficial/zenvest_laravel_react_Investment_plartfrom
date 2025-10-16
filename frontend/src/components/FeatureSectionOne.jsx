@@ -3,7 +3,7 @@ import featureImg from "../assets/feature-bars.png"; // place your image here (l
 
 const FeatureSectionOne = () => {
     return (
-        <section className="bg-black text-white py-24 px-6 md:px-16">
+        <section id="features" className="bg-black text-white py-24 px-6 md:px-16">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
 
                 {/* --- Left Content --- */}

@@ -33,7 +33,7 @@ const benefits = [
 
 const BenefitsSection = () => {
     return (
-        <section className="bg-black text-white py-24 px-6 md:px-16">
+        <section id="benefits" className="bg-black text-white py-24 px-6 md:px-16">
             {/* Header */}
             <div className="max-w-5xl mx-auto text-center mb-16">
                 <h4 className="text-sm tracking-widest text-purple-400 uppercase font-semibold">
