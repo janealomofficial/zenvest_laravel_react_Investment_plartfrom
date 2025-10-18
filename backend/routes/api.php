@@ -4,6 +4,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ApplicationController;
 use App\Http\Controllers\API\InvestmentController;
+use App\Http\Controllers\API\UserController;
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('/users', [UserController::class, 'index']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    
+});
+
 
 /*
 |--------------------------------------------------------------------------

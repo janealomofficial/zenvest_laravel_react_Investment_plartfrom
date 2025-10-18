@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * AuthController handles user registration, login, logout and token refresh using
- * JWT. The middleware protects all endpoints except login and register.
+ * AuthController handles user registration, login, logout and token refresh using JWT.
+ * The middleware protects all endpoints except login and register.
  */
 class AuthController extends Controller
 {
@@ -21,8 +21,8 @@ class AuthController extends Controller
     }
 
     /**
-     * Register a new user. Accepts name, email, password and role. The role
-     * should be either 'investor' or 'business_owner'.
+     * Register a new user. Accepts name, email, password and role.
+     * The role should be either 'admin', 'investor', or 'business_owner'.
      */
     public function register(Request $request)
     {
@@ -56,8 +56,17 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
+        // Attempt login
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $user = auth()->user();
+
+        // ✅ Allow admin, investor, and business_owner roles
+        if (!in_array($user->role, ['admin', 'investor', 'business_owner'])) {
+            auth()->logout();
+            return response()->json(['message' => 'Unauthorized role'], 401);
         }
 
         return $this->respondWithToken($token);
