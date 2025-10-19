@@ -10,8 +10,16 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
-    
 });
+
+use App\Http\Controllers\API\BusinessController;
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('/businesses', [BusinessController::class, 'index']);
+    Route::put('/businesses/{id}', [BusinessController::class, 'update']);
+    Route::delete('/businesses/{id}', [BusinessController::class, 'destroy']);
+});
+
 
 
 /*

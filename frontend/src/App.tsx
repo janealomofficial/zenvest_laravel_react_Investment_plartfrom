@@ -18,6 +18,8 @@ import AdminDashboard from './pages/Admin/Dashboard';
 import Users from './pages/Admin/Users';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
+import Businesses from './pages/Admin/Businesses';
+
 
 /**
  * Component to redirect the user to the appropriate dashboard based on
@@ -59,6 +61,16 @@ const App = () => {
           </ProtectedRoute>
         }
       />
+      {/* Admin routes */}
+      <Route
+        path="/admin/businesses"
+        element={
+          <ProtectedRoute roles={['admin']}>
+            <Businesses />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/admin/users"
         element={

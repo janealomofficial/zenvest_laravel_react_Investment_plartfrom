@@ -6,42 +6,35 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ApplicationResource;
 use App\Models\BusinessApplication;
 use App\Models\Investment;
+use App\Models\Business; // ✅ Added this line
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * ApplicationController handles creating and managing business applications.
- * Business owners can submit new applications, while investors can view,
- * approve or reject applications.
- */
 class ApplicationController extends Controller
 {
     public function __construct()
     {
-        // Protect all routes using JWT auth. Specific role checks are performed
-        // inside each controller method.
         $this->middleware('auth:api');
     }
 
     /**
-     * Display a listing of applications. Only investors and admins may see all
-     * applications; business owners can see only their own.
+     * Display a listing of applications.
      */
     public function index()
     {
         $user = auth()->user();
+
         if (in_array($user->role, ['investor', 'admin'])) {
             $applications = BusinessApplication::with('user')->get();
         } else {
-            // Return only the current user's applications
             $applications = $user->applications()->with('user')->get();
         }
+
         return ApplicationResource::collection($applications);
     }
 
     /**
-     * Store a newly created application. Only business owners can apply for
-     * funding.
+     * Store a newly created application.
      */
     public function store(Request $request)
     {
@@ -60,7 +53,6 @@ class ApplicationController extends Controller
             'pitch_deck' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ]);
 
-        // Handle optional pitch deck file upload
         $fileName = null;
         if ($request->hasFile('pitch_deck')) {
             $fileName = $request->file('pitch_deck')->store('pitch_decks');
@@ -78,12 +70,22 @@ class ApplicationController extends Controller
             'status' => 'pending',
         ]);
 
+        // ✅ Also create or update related Business
+        Business::updateOrCreate(
+            ['name' => $validated['business_name']],
+            [
+                'user_id' => $user->id,
+                'description' => $validated['description'] ?? null,
+                'funding_amount' => $validated['funding_amount'],
+                'status' => 'pending',
+            ]
+        );
+
         return new ApplicationResource($application);
     }
 
     /**
-     * Display a single application. Investors can view any application,
-     * business owners can view their own.
+     * Show a single application.
      */
     public function show(BusinessApplication $application)
     {
@@ -95,8 +97,7 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Approve an application. Only investors or admins may approve. When an
-     * application is approved we create a corresponding investment record.
+     * Approve an application.
      */
     public function approve(BusinessApplication $application)
     {
@@ -108,13 +109,9 @@ class ApplicationController extends Controller
             return response()->json(['message' => 'Application already processed'], 422);
         }
 
-        // Mark as approved
         $application->status = 'approved';
         $application->save();
 
-        // Create investment for the full funding amount. An investor could
-        // potentially specify an amount, but for simplicity we assume the full
-        // amount requested is invested when approving.
         Investment::create([
             'investor_id' => $user->id,
             'application_id' => $application->id,
@@ -124,11 +121,15 @@ class ApplicationController extends Controller
             'profit' => null,
         ]);
 
+        // ✅ Sync Business status
+        Business::where('name', $application->business_name)
+            ->update(['status' => 'approved']);
+
         return new ApplicationResource($application->load('user'));
     }
 
     /**
-     * Reject an application. Only investors or admins may reject.
+     * Reject an application.
      */
     public function reject(BusinessApplication $application)
     {
@@ -139,8 +140,14 @@ class ApplicationController extends Controller
         if ($application->status !== 'pending') {
             return response()->json(['message' => 'Application already processed'], 422);
         }
+
         $application->status = 'rejected';
         $application->save();
+
+        // ✅ Sync Business status
+        Business::where('name', $application->business_name)
+            ->update(['status' => 'rejected']);
+
         return new ApplicationResource($application->load('user'));
     }
 }

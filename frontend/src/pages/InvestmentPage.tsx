@@ -60,7 +60,7 @@ const InvestmentPage = () => {
               {investments.map((inv) => (
                 <tr key={inv.id} className="border-b">
                   <td className="px-4 py-2">{inv.application?.business_name}</td>
-                  <td className="px-4 py-2">${inv.amount.toFixed(2)}</td>
+                  <td>${Number(inv.amount || 0).toFixed(2)}</td> 
                   <td className="px-4 py-2">{inv.investment_date}</td>
                   <td className="px-4 py-2 capitalize">{inv.status}</td>
                   <td className="px-4 py-2">
