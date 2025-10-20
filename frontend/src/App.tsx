@@ -19,6 +19,8 @@ import Users from './pages/Admin/Users';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import Businesses from './pages/Admin/Businesses';
+import PlatformRevenue from './pages/Admin/PlatformRevenue';
+import InvestorProfit from './pages/Investor/InvestorProfit';
 
 
 /**
@@ -61,6 +63,25 @@ const App = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/admin/platform-revenue"
+        element={
+          <ProtectedRoute roles={['admin']}>
+            <PlatformRevenue />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/investor/investor-profit"
+        element={
+          <ProtectedRoute roles={['investor', 'admin']}>
+            <InvestorProfit />
+          </ProtectedRoute>
+        }
+      />
+
+
       {/* Admin routes */}
       <Route
         path="/admin/businesses"
@@ -140,6 +161,10 @@ const App = () => {
       {/* Catch-all 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+
+
+
+
   );
 };
 

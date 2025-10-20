@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ApplicationResource;
 use App\Models\BusinessApplication;
 use App\Models\Investment;
-use App\Models\Business; // ✅ Added this line
+use App\Models\Business;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -39,10 +39,12 @@ class ApplicationController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
+
         if ($user->role !== 'business_owner') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // ✅ Updated validation with new fields
         $validated = $request->validate([
             'business_name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -50,14 +52,18 @@ class ApplicationController extends Controller
             'revenue' => 'nullable|numeric',
             'profit' => 'nullable|numeric',
             'funding_amount' => 'required|numeric',
+            'investor_share' => 'required|numeric|min:0|max:100',
+            'platform_fee' => 'required|numeric|min:0|max:100',
             'pitch_deck' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ]);
 
+        // ✅ Handle optional pitch deck file upload
         $fileName = null;
         if ($request->hasFile('pitch_deck')) {
             $fileName = $request->file('pitch_deck')->store('pitch_decks');
         }
 
+        // ✅ Create new Business Application record
         $application = BusinessApplication::create([
             'user_id' => $user->id,
             'business_name' => $validated['business_name'],
@@ -66,11 +72,13 @@ class ApplicationController extends Controller
             'revenue' => $validated['revenue'] ?? null,
             'profit' => $validated['profit'] ?? null,
             'funding_amount' => $validated['funding_amount'],
+            'investor_share' => $validated['investor_share'],
+            'platform_fee' => $validated['platform_fee'],
             'pitch_deck' => $fileName,
             'status' => 'pending',
         ]);
 
-        // ✅ Also create or update related Business
+        // ✅ Create or update related Business entry
         Business::updateOrCreate(
             ['name' => $validated['business_name']],
             [
@@ -78,6 +86,8 @@ class ApplicationController extends Controller
                 'description' => $validated['description'] ?? null,
                 'funding_amount' => $validated['funding_amount'],
                 'status' => 'pending',
+                'investor_share' => $validated['investor_share'],
+                'platform_fee' => $validated['platform_fee'],
             ]
         );
 
@@ -90,9 +100,11 @@ class ApplicationController extends Controller
     public function show(BusinessApplication $application)
     {
         $user = auth()->user();
+
         if (in_array($user->role, ['investor', 'admin']) || $user->id === $application->user_id) {
             return new ApplicationResource($application->load('user'));
         }
+
         return response()->json(['message' => 'Forbidden'], 403);
     }
 
@@ -102,16 +114,20 @@ class ApplicationController extends Controller
     public function approve(BusinessApplication $application)
     {
         $user = auth()->user();
+
         if (!in_array($user->role, ['investor', 'admin'])) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
+
         if ($application->status !== 'pending') {
             return response()->json(['message' => 'Application already processed'], 422);
         }
 
+        // ✅ Update application status
         $application->status = 'approved';
         $application->save();
 
+        // ✅ Create Investment record linked to this application
         Investment::create([
             'investor_id' => $user->id,
             'application_id' => $application->id,
@@ -134,13 +150,16 @@ class ApplicationController extends Controller
     public function reject(BusinessApplication $application)
     {
         $user = auth()->user();
+
         if (!in_array($user->role, ['investor', 'admin'])) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
+
         if ($application->status !== 'pending') {
             return response()->json(['message' => 'Application already processed'], 422);
         }
 
+        // ✅ Update application status
         $application->status = 'rejected';
         $application->save();
 
@@ -149,5 +168,38 @@ class ApplicationController extends Controller
             ->update(['status' => 'rejected']);
 
         return new ApplicationResource($application->load('user'));
+    }
+
+    /**
+     * Dashboard summary for admin or investor
+     */
+    public function summary()
+    {
+        $user = auth()->user();
+
+        // If admin – show total investor profits and platform fees
+        if ($user->role === 'admin') {
+            $totalInvestorProfit = \App\Models\Investment::sum('profit');
+            $platformRevenue = \App\Models\BusinessApplication::sum('platform_fee'); // or a proper formula if stored separately
+
+            return response()->json([
+                'role' => 'admin',
+                'total_investor_profit' => round($totalInvestorProfit, 2),
+                'platform_revenue' => round($platformRevenue, 2),
+            ]);
+        }
+
+        // If investor – show their own profit
+        if ($user->role === 'investor') {
+            $myProfit = \App\Models\Investment::where('investor_id', $user->id)->sum('profit');
+
+            return response()->json([
+                'role' => 'investor',
+                'my_profit' => round($myProfit, 2),
+            ]);
+        }
+
+        // Business owners don’t need a profit view
+        return response()->json(['message' => 'Not available for this role.'], 403);
     }
 }

@@ -54,3 +54,5 @@ Route::controller(ApplicationController::class)->group(function () {
 Route::controller(InvestmentController::class)->group(function () {
     Route::get('/investments', 'index');
 });
+
+Route::middleware('auth:api')->get('/dashboard/summary', [App\Http\Controllers\API\ApplicationController::class, 'summary']);

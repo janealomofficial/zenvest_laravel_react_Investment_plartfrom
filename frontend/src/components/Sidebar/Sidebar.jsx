@@ -47,7 +47,12 @@ const Sidebar = () => {
               >
                 My Investments
               </Link>
+
+              <Link to="/investor/investor-profit" className="hover:text-yellow-400">
+                Investor Profit
+              </Link>
             </>
+
           )}
 
           {/* Business Owner Links */}
@@ -94,6 +99,10 @@ const Sidebar = () => {
                 className={isActive("/admin/businesses")}
               >
                 Manage Businesses
+              </Link>
+
+              <Link to="/admin/platform-revenue" className="hover:text-yellow-400">
+                Platform Revenue
               </Link>
             </>
           )}
