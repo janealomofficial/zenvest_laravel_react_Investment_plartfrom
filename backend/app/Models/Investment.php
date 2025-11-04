@@ -5,9 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * An Investment records that an investor has funded a particular application.
- */
 class Investment extends Model
 {
     use HasFactory;
@@ -15,6 +12,7 @@ class Investment extends Model
     protected $fillable = [
         'investor_id',
         'application_id',
+        'business_id',
         'amount',
         'investment_date',
         'status',
@@ -35,5 +33,13 @@ class Investment extends Model
     public function application()
     {
         return $this->belongsTo(BusinessApplication::class, 'application_id');
+    }
+
+    /**
+     * The business this investment is tied to.
+     */
+    public function business()
+    {
+        return $this->belongsTo(Business::class);
     }
 }

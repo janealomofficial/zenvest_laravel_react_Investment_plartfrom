@@ -12,6 +12,7 @@ import InvestorDashboard from './pages/InvestorDashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
 import MyBusinesses from './pages/Owner/MyBusinesses';
 import ApplicationFormPage from './pages/ApplicationFormPage';
+import SubmitMonthlyProfitPage from "./pages/Owner/SubmitMonthlyProfitPage";
 import InvestmentPage from './pages/InvestmentPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/Admin/Dashboard';
@@ -21,6 +22,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Businesses from './pages/Admin/Businesses';
 import PlatformRevenue from './pages/Admin/PlatformRevenue';
 import InvestorProfit from './pages/Investor/InvestorProfit';
+import SubmitMonthlyProfit from "./pages/Owner/SubmitMonthlyProfitPage";
+import MonthlyProfitsPage from "./pages/Admin/MonthlyProfitsPage";
+
+
 
 
 /**
@@ -101,6 +106,16 @@ const App = () => {
         }
       />
 
+            <Route
+        path="/admin/monthly-profits"
+        element={
+          <ProtectedRoute roles={["admin"]}>
+            <MonthlyProfitsPage />
+          </ProtectedRoute>
+        }
+      />
+
+
       {/* Investor routes */}
       <Route
         path="/investor/dashboard"
@@ -133,9 +148,39 @@ const App = () => {
         element={
           <ProtectedRoute roles={['business_owner']}>
             <ApplicationFormPage />
+            {/* <Route path="/profits/new" element={<SubmitMonthlyProfitPage />} /> */}
+
           </ProtectedRoute>
         }
       />
+      {/* Business owner routes */}
+        <Route
+          path="/applications/new"
+          element={
+            <ProtectedRoute roles={['business_owner']}>
+              <ApplicationFormPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profits/new"
+          element={
+            <ProtectedRoute roles={['business_owner']}>
+              <SubmitMonthlyProfitPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+      <Route
+          path="/submit-monthly-profit"
+          element={
+            <ProtectedRoute>
+              <SubmitMonthlyProfit />
+            </ProtectedRoute>
+          }
+        />
 
       {/* Business owner businesses route */}
       <Route

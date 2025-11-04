@@ -22,4 +22,12 @@ class Business extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function investments()
+{
+    return $this->hasMany(Investment::class);
+}
+
+
+
 }

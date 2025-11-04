@@ -174,32 +174,44 @@ class ApplicationController extends Controller
      * Dashboard summary for admin or investor
      */
     public function summary()
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        // If admin – show total investor profits and platform fees
-        if ($user->role === 'admin') {
-            $totalInvestorProfit = \App\Models\Investment::sum('profit');
-            $platformRevenue = \App\Models\BusinessApplication::sum('platform_fee'); // or a proper formula if stored separately
+    // 🟦 ADMIN VIEW
+    if ($user->role === 'admin') {
+        $totalInvestorProfit = \App\Models\InvestorProfit::sum('amount');
+        $platformRevenue = \App\Models\MonthlyProfit::sum('platform_fee_amount');
 
-            return response()->json([
-                'role' => 'admin',
-                'total_investor_profit' => round($totalInvestorProfit, 2),
-                'platform_revenue' => round($platformRevenue, 2),
-            ]);
-        }
-
-        // If investor – show their own profit
-        if ($user->role === 'investor') {
-            $myProfit = \App\Models\Investment::where('investor_id', $user->id)->sum('profit');
-
-            return response()->json([
-                'role' => 'investor',
-                'my_profit' => round($myProfit, 2),
-            ]);
-        }
-
-        // Business owners don’t need a profit view
-        return response()->json(['message' => 'Not available for this role.'], 403);
+        return response()->json([
+            'role' => 'admin',
+            'total_investor_profit' => round($totalInvestorProfit, 2),
+            'platform_revenue' => round($platformRevenue, 2),
+        ]);
     }
+
+    // 🟩 INVESTOR VIEW
+    if ($user->role === 'investor') {
+        $myProfit = \App\Models\InvestorProfit::where('investor_id', $user->id)->sum('amount');
+
+        return response()->json([
+            'role' => 'investor',
+            'my_profit' => round($myProfit, 2),
+        ]);
+    }
+
+    // 🟧 BUSINESS OWNER VIEW (optional)
+    if ($user->role === 'business_owner') {
+        $myBusiness = \App\Models\Business::where('user_id', $user->id)->pluck('id');
+        $myBusinessProfit = \App\Models\MonthlyProfit::whereIn('business_id', $myBusiness)->sum('owner_share_amount');
+
+        return response()->json([
+            'role' => 'business_owner',
+            'my_business_profit' => round($myBusinessProfit, 2),
+        ]);
+    }
+
+    // Default fallback
+    return response()->json(['message' => 'Not available for this role.'], 403);
+}
+
 }

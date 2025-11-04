@@ -76,6 +76,13 @@ const Sidebar = () => {
               >
                 My Businesses
               </Link>
+
+              <Link
+                  to="/submit-monthly-profit"
+                  className={isActive("/owner/businesses")}
+                >
+                  Submit Monthly Profit
+                </Link>
             </>
           )}
 
@@ -103,6 +110,13 @@ const Sidebar = () => {
 
               <Link to="/admin/platform-revenue" className="hover:text-yellow-400">
                 Platform Revenue
+              </Link>
+
+              <Link
+                to="/admin/monthly-profits"
+                className={isActive("/admin/monthly-profits")}
+              >
+                Manage Profits
               </Link>
             </>
           )}
