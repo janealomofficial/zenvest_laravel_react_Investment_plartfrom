@@ -9,25 +9,32 @@ class Business extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'description',
-        'funding_amount',
-        'status',
-        'user_id', // assuming a business belongs to a user (owner)
-    ];
+   protected $fillable = [
+    'user_id',
+    'name',
+    'description',
+    'category',
+    'revenue',
+    'profit',
+    'funding_amount',
+    'status',
+    'investor_share',
+    'platform_fee',
+];
 
-    // Relationship: Business belongs to a User
-    public function owner()
+
+    public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 
     public function investments()
-{
-    return $this->hasMany(Investment::class);
-}
+    {
+        return $this->hasMany(Investment::class, 'business_id');
+    }
 
-
-
+    public function monthlyProfits()
+    {
+        return $this->hasMany(MonthlyProfit::class, 'business_id');
+    }
 }

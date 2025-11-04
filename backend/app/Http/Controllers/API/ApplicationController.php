@@ -111,38 +111,69 @@ class ApplicationController extends Controller
     /**
      * Approve an application.
      */
-    public function approve(BusinessApplication $application)
-    {
-        $user = auth()->user();
+    /**
+ * Approve an application.
+ */
+public function approve(BusinessApplication $application)
+{
+    $user = auth()->user();
 
-        if (!in_array($user->role, ['investor', 'admin'])) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+    if (!in_array($user->role, ['investor', 'admin'])) {
+        return response()->json(['message' => 'Forbidden'], 403);
+    }
 
-        if ($application->status !== 'pending') {
-            return response()->json(['message' => 'Application already processed'], 422);
-        }
+    if ($application->status !== 'pending') {
+        return response()->json(['message' => 'Application already processed'], 422);
+    }
 
-        // ✅ Update application status
-        $application->status = 'approved';
-        $application->save();
+    // ✅ Step 1: Find or create Business
+    $business = Business::firstOrCreate(
+        ['name' => $application->business_name],
+        [
+            'user_id' => $application->user_id,
+            'description' => $application->description,
+            'category' => $application->category,
+            'revenue' => $application->revenue ?? 0,
+            'profit' => $application->profit ?? 0,
+            'funding_amount' => $application->funding_amount,
+            'status' => 'approved',
+            'investor_share' => $application->investor_share ?? 0,
+            'platform_fee' => $application->platform_fee ?? 0,
+        ]
+    );
 
-        // ✅ Create Investment record linked to this application
-        Investment::create([
+    // ✅ Step 2: Link application to the business
+    $application->update([
+        'status' => 'approved',
+        'business_id' => $business->id,
+    ]);
+
+    // ✅ Step 3: Create or update Investment linked to both
+    Investment::updateOrCreate(
+        [
             'investor_id' => $user->id,
             'application_id' => $application->id,
+        ],
+        [
+            'business_id' => $business->id,
             'amount' => $application->funding_amount,
             'investment_date' => now()->toDateString(),
             'status' => 'active',
             'profit' => null,
-        ]);
+        ]
+    );
 
-        // ✅ Sync Business status
-        Business::where('name', $application->business_name)
-            ->update(['status' => 'approved']);
+    // ✅ Step 4: Ensure all existing investments for this application are linked too
+    Investment::where('application_id', $application->id)
+        ->whereNull('business_id')
+        ->update(['business_id' => $business->id]);
 
-        return new ApplicationResource($application->load('user'));
-    }
+    return response()->json([
+        'message' => 'Application approved, business and investments linked successfully.',
+        'application' => new \App\Http\Resources\ApplicationResource($application->load('user')),
+        'business' => $business,
+    ]);
+}
 
     /**
      * Reject an application.

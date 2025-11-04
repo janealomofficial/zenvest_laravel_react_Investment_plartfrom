@@ -19,27 +19,18 @@ class Investment extends Model
         'profit',
     ];
 
-    /**
-     * The investor who made this investment.
-     */
     public function investor()
     {
         return $this->belongsTo(User::class, 'investor_id');
     }
 
-    /**
-     * The application this investment funds.
-     */
+    public function business()
+    {
+        return $this->belongsTo(Business::class, 'business_id');
+    }
+
     public function application()
     {
         return $this->belongsTo(BusinessApplication::class, 'application_id');
-    }
-
-    /**
-     * The business this investment is tied to.
-     */
-    public function business()
-    {
-        return $this->belongsTo(Business::class);
     }
 }

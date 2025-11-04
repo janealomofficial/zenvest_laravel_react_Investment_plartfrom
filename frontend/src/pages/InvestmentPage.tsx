@@ -53,7 +53,7 @@ const InvestmentPage = () => {
                 <th className="px-4 py-2">Amount</th>
                 <th className="px-4 py-2">Date</th>
                 <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2">Profit</th>
+                {/* <th className="px-4 py-2">Profit</th> */}
               </tr>
             </thead>
             <tbody>
@@ -63,9 +63,9 @@ const InvestmentPage = () => {
                   <td>${Number(inv.amount || 0).toFixed(2)}</td> 
                   <td className="px-4 py-2">{inv.investment_date}</td>
                   <td className="px-4 py-2 capitalize">{inv.status}</td>
-                  <td className="px-4 py-2">
+                  {/* <td className="px-4 py-2">
                     {inv.profit !== null ? `$${inv.profit.toFixed(2)}` : '-'}
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

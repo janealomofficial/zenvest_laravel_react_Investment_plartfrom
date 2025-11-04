@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Http\Controllers\API;
 
@@ -9,6 +9,7 @@ use App\Models\Investment;
 use App\Models\InvestorProfit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class MonthlyProfitController extends Controller
@@ -52,74 +53,74 @@ class MonthlyProfitController extends Controller
 
     // 🟣 Admin: approve a profit
     public function approve($id)
-    {
-        Log::info("🔹 Approve route triggered for MonthlyProfit ID: {$id}");
+{
+    \Log::info("🔹 Approve route triggered for MonthlyProfit ID: {$id}");
 
-        $monthlyProfit = MonthlyProfit::with('business.investments.investor')->find($id);
+    $monthlyProfit = MonthlyProfit::with('business.investments.investor')->find($id);
 
-        if (!$monthlyProfit) {
-            Log::error("❌ MonthlyProfit not found with ID {$id}");
-            return response()->json(['message' => 'Monthly profit not found.'], 404);
-        }
-
-        if ($monthlyProfit->status === 'approved') {
-            return response()->json(['message' => 'This profit has already been approved.'], 400);
-        }
-
-        // Mark as approved
-        $monthlyProfit->update([
-            'status' => 'approved',
-            'approved_at' => now(),
-        ]);
-
-        $business = $monthlyProfit->business;
-
-        if (!$business) {
-            Log::error("❌ No business associated with profit ID {$id}");
-            return response()->json(['message' => 'No business found for this profit.'], 404);
-        }
-
-        $investments = $business->investments ?? collect();
-
-        if ($investments->isEmpty()) {
-            Log::warning("⚠️ No investments found for business ID {$business->id}");
-            return response()->json(['message' => 'No investors found for this business.'], 400);
-        }
-
-        $totalInvestment = $investments->sum('amount');
-        if ($totalInvestment <= 0) {
-            Log::warning("⚠️ Total investment for business {$business->id} is zero.");
-            return response()->json(['message' => 'Invalid investment data.'], 400);
-        }
-
-        $distributed = [];
-
-        foreach ($investments as $investment) {
-            $share = ($investment->amount / $totalInvestment);
-            $investorProfitAmount = $monthlyProfit->profit_amount * $share;
-
-            InvestorProfit::create([
-                'investor_id' => $investment->investor_id,
-                'business_id' => $business->id,
-                'monthly_profit_id' => $monthlyProfit->id,
-                'amount' => $investorProfitAmount,
-                'month' => $monthlyProfit->month,
-                'year' => $monthlyProfit->year,
-            ]);
-
-            $distributed[] = [
-                'investor' => $investment->investor->name ?? 'Unknown',
-                'amount' => round($investorProfitAmount, 2),
-            ];
-        }
-
-        Log::info("✅ Profit ID {$id} approved and distributed to investors.", $distributed);
-
-        return response()->json([
-            'message' => '✅ Profit approved and distributed successfully.',
-            'distributed' => $distributed,
-        ]);
+    if (!$monthlyProfit) {
+        \Log::error("❌ MonthlyProfit not found with ID {$id}");
+        return response()->json(['message' => 'Monthly profit not found.'], 404);
     }
+
+    if ($monthlyProfit->status === 'approved') {
+        return response()->json(['message' => 'This profit has already been approved.'], 400);
+    }
+
+    $business = $monthlyProfit->business;
+
+    // ✅ Self-heal check for missing business link
+    if (!$business) {
+        \Log::error("❌ No business associated with profit ID {$id}");
+        return response()->json(['message' => 'No business linked to this profit.'], 400);
+    }
+
+    $investments = $business->investments()->with('investor')->get();
+
+    if ($investments->isEmpty()) {
+        \Log::warning("⚠️ No investments found for business ID {$business->id}");
+        return response()->json(['message' => 'No investors found for this business.'], 400);
+    }
+
+    // ✅ Mark as approved
+    $monthlyProfit->update([
+        'status' => 'approved',
+        'approved_at' => now(),
+    ]);
+
+    $totalInvestment = $investments->sum('amount');
+    if ($totalInvestment <= 0) {
+        return response()->json(['message' => 'Invalid investment data.'], 400);
+    }
+
+    $distributed = [];
+
+    foreach ($investments as $investment) {
+        $share = $investment->amount / $totalInvestment;
+        $investorProfitAmount = $monthlyProfit->profit_amount * $share;
+
+        \App\Models\InvestorProfit::create([
+            'investor_id' => $investment->investor_id,
+            'business_id' => $business->id,
+            'monthly_profit_id' => $monthlyProfit->id,
+            'amount' => $investorProfitAmount,
+            'month' => $monthlyProfit->month,
+            'year' => $monthlyProfit->year,
+        ]);
+
+        $distributed[] = [
+            'investor' => $investment->investor->name ?? 'Unknown',
+            'amount' => round($investorProfitAmount, 2),
+        ];
+    }
+
+    \Log::info("✅ Profit ID {$id} approved and distributed to investors.", $distributed);
+
+    return response()->json([
+        'message' => '✅ Profit approved and distributed successfully.',
+        'distributed' => $distributed,
+    ]);
+}
 
     // 🟢 Business owner view
     public function index(Business $business)
